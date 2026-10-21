@@ -134,3 +134,6 @@ Apps = "Приложения";
 "Normal" = "Обычный";
 "Low" = "Низкий";
 "Very Low" = "Очень низкий";
+ShowErrorDetails = "Показать сведения об ошибке";
+ErrorDetails = "Сведения об ошибке";
+NoErrorDetailsAvailable = "Диагностические сведения не сохранены.";

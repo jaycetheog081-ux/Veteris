@@ -143,3 +143,6 @@
 "Normal" = "Normal";
 "Low" = "Bajo";
 "Very Low" = "Muy bajo";
+ShowErrorDetails = "Ver detalles del error";
+ErrorDetails = "Detalles del error";
+NoErrorDetailsAvailable = "No se registraron detalles de diagnóstico.";

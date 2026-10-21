@@ -31,6 +31,7 @@ static void YZFailDownload(YZQueueRep *parent, NSString *reason) {
     YZDownloadLog(@"failed before download: %@", reason);
     debugLog(@"Download failed before start: %@", reason);
     if (parent != nil) {
+        parent.errorDetails = reason;
         parent.downloadTask = nil;
         parent.state = YZRepStateFailed;
     }
@@ -758,6 +759,7 @@ static void YZTrackDownloadTelemetry(YZQueueRep *parent,
                                          request.error);
                 YZDownloadLog(@"final failure %@ after %lu attempts", filePath, (unsigned long)kMaxDownloadAttempts);
                 [self removeFileAt:filePath];
+                parent.errorDetails = [request.error localizedDescription] ?: [NSString stringWithFormat:@"Download failed with HTTP status %lu", (unsigned long)httpStatus];
                 parent.state = YZRepStateFailed;
             }
         }

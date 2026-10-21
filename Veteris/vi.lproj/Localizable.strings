@@ -131,3 +131,6 @@
 "Normal" = "Bình thường";
 "Low" = "Thấp";
 "Very Low" = "Rất thấp";
+ShowErrorDetails = "Hiển thị chi tiết lỗi";
+ErrorDetails = "Chi tiết lỗi";
+NoErrorDetailsAvailable = "Không có thông tin chẩn đoán nào được ghi lại.";

@@ -144,3 +144,6 @@
 "Normal" = "正常";
 "Low" = "低";
 "Very Low" = "极低";
+ShowErrorDetails = "显示错误详情";
+ErrorDetails = "错误详情";
+NoErrorDetailsAvailable = "未记录诊断详情。";

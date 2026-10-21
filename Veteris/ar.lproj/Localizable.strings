@@ -143,3 +143,6 @@
 "Normal" = "عادي";
 "Low" = "منخفض";
 "Very Low" = "منخفض جدا";
+ShowErrorDetails = "عرض تفاصيل الخطأ";
+ErrorDetails = "تفاصيل الخطأ";
+NoErrorDetailsAvailable = "لم يتم تسجيل أي تفاصيل تشخيصية.";

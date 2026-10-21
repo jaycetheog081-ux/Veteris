@@ -146,7 +146,7 @@
     if (indexPath.section == YZRepStateDownloading) {
         actionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Options", nil) delegate:self cancelButtonTitle:NSLocalizedString(@"Close", nil) destructiveButtonTitle:NSLocalizedString(@"RemoveFromQueue", @"Remove from Queue") otherButtonTitles:NSLocalizedString(@"Pause", nil), nil];
     } else if (indexPath.section == YZRepStateFailed) {
-        actionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Options", nil) delegate:self cancelButtonTitle:NSLocalizedString(@"Close", nil) destructiveButtonTitle:NSLocalizedString(@"RemoveFromQueue", @"Remove from Queue") otherButtonTitles:NSLocalizedString(@"Retry", nil), nil];
+        actionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Options", nil) delegate:self cancelButtonTitle:NSLocalizedString(@"Close", nil) destructiveButtonTitle:NSLocalizedString(@"RemoveFromQueue", @"Remove from Queue") otherButtonTitles:NSLocalizedString(@"Retry", nil), NSLocalizedString(@"ShowErrorDetails", @"Show error details"), nil];
     } else if (indexPath.section == YZRepStatePaused) {
         actionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Options", nil) delegate:self cancelButtonTitle:NSLocalizedString(@"Close", nil) destructiveButtonTitle:NSLocalizedString(@"RemoveFromQueue", @"Remove from Queue") otherButtonTitles:NSLocalizedString(@"Resume", nil), nil];
     } else if (indexPath.section == YZRepStateInstalled) {
@@ -166,12 +166,25 @@
         return;
     }
 
-    QueueTableViewCell *cell = (QueueTableViewCell *)[self.tableView cellForRowAtIndexPath:[self.tableView indexPathForSelectedRow]];
+    NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+
+    if (indexPath.section == YZRepStateFailed && buttonIndex == 2) {
+        YZQueueRep *rep = [_queueState repForSection:indexPath.section atIndex:indexPath.row];
+        NSString *message = rep.errorDetails;
+        if ([message length] == 0) {
+            message = NSLocalizedString(@"NoErrorDetailsAvailable", @"No diagnostic details were recorded.");
+        }
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ErrorDetails", @"Error details") message:message delegate:nil cancelButtonTitle:NSLocalizedString(@"OK", nil) otherButtonTitles:nil];
+        [alert show];
+        [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+        return;
+    }
+
+    QueueTableViewCell *cell = (QueueTableViewCell *)[self.tableView cellForRowAtIndexPath:indexPath];
     YZQueueRep *rep = [cell rep];
     bool isDownloading = rep.state == YZRepStateDownloading;
     bool isFailed = rep.state == YZRepStateFailed;
     bool isPaused = rep.state == YZRepStatePaused;
-    NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
     if (buttonIndex == 0) {
         if (rep.state == YZRepStateInstalling) {
             alert(@"Error", @"The application is already installing.", VAPIHelperErrorUnknown);

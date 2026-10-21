@@ -144,3 +144,6 @@
 "Normal" = "רגיל";
 "Low" = "נמוך";
 "Very Low" = "נמוך מאוד";
+ShowErrorDetails = "הצגת פרטי השגיאה";
+ErrorDetails = "פרטי השגיאה";
+NoErrorDetailsAvailable = "לא נשמרו פרטי אבחון.";

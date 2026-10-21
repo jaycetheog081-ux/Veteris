@@ -144,3 +144,6 @@
 "Normal" = "通常";
 "Low" = "低";
 "Very Low" = "非常に低い";
+ShowErrorDetails = "エラーの詳細を表示";
+ErrorDetails = "エラーの詳細";
+NoErrorDetailsAvailable = "診断情報は記録されていません。";

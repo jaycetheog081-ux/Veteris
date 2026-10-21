@@ -36,6 +36,7 @@ typedef enum {
 @property (nonatomic) BOOL installAfterDownload;
 @property (nonatomic, assign) YZRepState state;
 @property (nonatomic) BOOL preservePartialOnCancel;
+@property (nonatomic, copy) NSString *errorDetails;
 @property (nonatomic) NSUInteger storedProgressCurrent;
 @property (nonatomic) NSUInteger storedProgressTotal;
 @property (nonatomic, weak) BBHTTPRequest *request;

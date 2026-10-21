@@ -134,3 +134,6 @@
 "Normal" = "Normal";
 "Low" = "Niedrig";
 "Very Low" = "Sehr niedrig";
+ShowErrorDetails = "Fehlerdetails anzeigen";
+ErrorDetails = "Fehlerdetails";
+NoErrorDetailsAvailable = "Es wurden keine Fehlerdetails aufgezeichnet.";
