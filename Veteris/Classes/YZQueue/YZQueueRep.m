@@ -35,6 +35,64 @@ static unsigned long long YZQueueParallelPartBytesForPath(NSString *targetPath) 
     return bytes;
 }
 
+static NSString *YZQueueStateLogName(YZRepState state) {
+    switch (state) {
+        case YZRepStateInstalled: return @"installed";
+        case YZRepStateInstalling: return @"installing";
+        case YZRepStateDownloaded: return @"downloaded";
+        case YZRepStateDownloading: return @"downloading";
+        case YZRepStateQueued: return @"queued";
+        case YZRepStateFailed: return @"failed";
+        case YZRepStatePaused: return @"paused";
+        case YZRepStateCancelled: return @"cancelled";
+    }
+    return @"unknown";
+}
+
+static void YZAppendQueueOperationLog(YZQueueRep *rep, YZRepState state) {
+    NSString *directory = downloadPath();
+    if ([directory length] == 0) {
+        return;
+    }
+    NSFileManager *manager = [NSFileManager defaultManager];
+    NSError *error = nil;
+    if (![manager createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:&error]) {
+        debugLog(@"Could not create download log directory %@: %@", directory, [error localizedDescription]);
+        return;
+    }
+
+    NSString *logPath = [directory stringByAppendingPathComponent:@"VeterisDownload.log"];
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssZ"];
+    NSString *line = [NSString stringWithFormat:@"%@ event=%@ name=%@ bundle=%@ version=%@ mode=%@ path=%@\n",
+                      [formatter stringFromDate:[NSDate date]],
+                      YZQueueStateLogName(state),
+                      rep.name ?: @"",
+                      rep.bundleID ?: @"",
+                      rep.version ?: @"",
+                      rep.installAfterDownload ? @"install" : @"download-only",
+                      rep.path ?: @""];
+    NSData *data = [line dataUsingEncoding:NSUTF8StringEncoding];
+    @synchronized ([YZQueueRep class]) {
+        if (![manager fileExistsAtPath:logPath]) {
+            [manager createFileAtPath:logPath contents:nil attributes:nil];
+        }
+        NSFileHandle *handle = [NSFileHandle fileHandleForWritingAtPath:logPath];
+        if (handle == nil) {
+            return;
+        }
+        @try {
+            [handle seekToEndOfFile];
+            [handle writeData:data];
+            [handle synchronizeFile];
+        } @catch (NSException *exception) {
+            debugLog(@"Could not append download log: %@", [exception reason]);
+        } @finally {
+            [handle closeFile];
+        }
+    }
+}
+
 + (void)detachRepWithYZApp:(YZApplication *)yzApp andURL:(NSString *)url {
     [self detachRepWithYZApp:yzApp andURL:url trackDownloadStart:YES];
 }
@@ -125,6 +183,7 @@ static unsigned long long YZQueueParallelPartBytesForPath(NSString *targetPath) 
 
 - (void)setState:(YZRepState)state {
     _state = state;
+    YZAppendQueueOperationLog(self, state);
     if (_resumeSourceURL != nil && _resumeTargetPath != nil) {
         BOOL keepResumeRecord = (state == YZRepStateQueued ||
                                  state == YZRepStateDownloading ||
