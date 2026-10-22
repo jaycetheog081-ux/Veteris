@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIRequiredDeviceCapabilities</key>
+	<dict/>
+	<key>appleId</key>
+	<string>jony.ive@apple.com</string>
+	<key>appleWatchEnabled</key>
+	<true/>
+	<key>artistId</key>
+	<integer>284417353</integer>
+	<key>artistName</key>
+	<string>Apple</string>
+	<key>asset-info</key>
+	<dict>
+		<key>file-size</key>
+		<integer>20213017</integer>
+		<key>flavor</key>
+		<string>10:purple</string>
+	</dict>
+	<key>bundleDisplayName</key>
+	<string>Find Friends</string>
+	<key>bundleShortVersionString</key>
+	<string>2.1.1</string>
+	<key>bundleVersion</key>
+	<string>300</string>
+	<key>copyright</key>
+	<string>© 2016-2017 Apple Inc. All rights reserved.</string>
+	<key>drmVersionNumber</key>
+	<integer>0</integer>
+	<key>fileExtension</key>
+	<string>.app</string>
+	<key>gameCenterEnabled</key>
+	<false/>
+	<key>gameCenterEverEnabled</key>
+	<false/>
+	<key>genre</key>
+	<string>Social Networking</string>
+	<key>genreId</key>
+	<integer>6005</integer>
+	<key>is-purchased-redownload</key>
+	<true/>
+	<key>is32BitOnly</key>
+	<true/>
+	<key>itemId</key>
+	<integer>466122094</integer>
+	<key>itemName</key>
+	<string>Find My Friends</string>
+	<key>kind</key>
+	<string>software</string>
+	<key>playlistName</key>
+	<string>Apple</string>
+	<key>product-type</key>
+	<string>ios-app</string>
+	<key>purchaseDate</key>
+	<date>2009-08-26T19:12:18Z</date>
+	<key>rating</key>
+	<dict>
+		<key>content</key>
+		<string>Advisory.NO.UNRESTRICTED_WEB_ACCESS and Advisory.NO.GAMBLING_CONTESTS</string>
+		<key>label</key>
+		<string>4+</string>
+		<key>rank</key>
+		<integer>100</integer>
+		<key>system</key>
+		<string>itunes-games</string>
+	</dict>
+	<key>releaseDate</key>
+	<string>2011-10-13T01:00:16Z</string>
+	<key>s</key>
+	<integer>143441</integer>
+	<key>softwareIcon57x57URL</key>
+	<string>https://is1-ssl.mzstatic.com/image/thumb/Purple124/v4/a8/d2/9b/a8d29b4c-1986-ec00-d14a-28ec2730d745/AppIcon-1x_U007emarketing-0-0-GLES2_U002c0-512MB-sRGB-0-0-0-85-220-0-0-0-9.png/114x114bb.jpg</string>
+	<key>softwareIconNeedsShine</key>
+	<false/>
+	<key>softwareSupportedDeviceIds</key>
+	<array>
+		<integer>2</integer>
+		<integer>9</integer>
+		<integer>4</integer>
+		<integer>13</integer>
+	</array>
+	<key>softwareVersionBundleId</key>
+	<string>com.apple.mobileme.fmf1</string>
+	<key>softwareVersionExternalIdentifier</key>
+	<integer>16391049</integer>
+	<key>softwareVersionExternalIdentifiers</key>
+	<array>
+		<integer>4163715</integer>
+		<integer>6719770</integer>
+		<integer>10597105</integer>
+		<integer>11722991</integer>
+		<integer>14870261</integer>
+		<integer>16391049</integer>
+		<integer>135572632</integer>
+		<integer>704272732</integer>
+		<integer>742732657</integer>
+		<integer>815437968</integer>
+		<integer>818443781</integer>
+		<integer>823264221</integer>
+		<integer>826839489</integer>
+	</array>
+	<key>userName</key>
+	<string></string>
+	<key>vendorId</key>
+	<integer>2003</integer>
+	<key>versionRestrictions</key>
+	<integer>16843008</integer>
+</dict>
+</plist>

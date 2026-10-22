@@ -1,0 +1,60 @@
+/* No comment provided by engineer. */
+"Connection error: internal" = "Connection error: internal";
+
+/* No comment provided by engineer. */
+"Connection error: internal (%08X)." = "Connection error: internal (%08X).";
+
+/* No comment provided by engineer. */
+"Connection error: system (%d)." = "Connection error: system (%d).";
+
+/* No comment provided by engineer. */
+"Connection error: system error" = "Connection error: system error";
+
+/* No comment provided by engineer. */
+"Connection timed out." = "Connection timed out.";
+
+/* No comment provided by engineer. */
+"Connection to peer already in progress after initially succeeding." = "Connection to peer already in progress after initially succeeding.";
+
+/* No comment provided by engineer. */
+"Failed while not pending." = "Failed while not pending.";
+
+/* No comment provided by engineer. */
+"Failed while pending incoming invitation." = "Failed while pending incoming invitation.";
+
+/* No comment provided by engineer. */
+"Failed while pending outgoing invitation." = "Failed while pending outgoing invitation.";
+
+/* No comment provided by engineer. */
+"Found in progress after success." = "Found in progress after success.";
+
+/* No comment provided by engineer. */
+"Incoming invitation timed out." = "Incoming invitation timed out.";
+
+/* No comment provided by engineer. */
+"Invitation timed out." = "Invitation timed out.";
+
+/* No comment provided by engineer. */
+"Outgoing invitation timed out before TCP." = "Outgoing invitation timed out before TCP.";
+
+/* No comment provided by engineer. */
+"Outgoing invitation timed out." = "Outgoing invitation timed out.";
+
+/* No comment provided by engineer. */
+"Remote cancelled." = "Remote cancelled.";
+
+/* No comment provided by engineer. */
+"Remote declined." = "Remote declined.";
+
+/* No comment provided by engineer. */
+"The invited peer has cancelled the connection." = "The invited peer has cancelled the connection.";
+
+/* No comment provided by engineer. */
+"The invited peer has declined the connection." = "The invited peer has declined the connection.";
+
+/* No comment provided by engineer. */
+"Unknown connection timed out." = "Unknown connection timed out.";
+
+/* No comment provided by engineer. */
+"Unknown disconnect." = "Unknown disconnect.";
+
