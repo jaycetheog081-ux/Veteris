@@ -1,0 +1,104 @@
+name: Build Veteris Rootful DEB
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ARM64 Rootful Package
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout Veteris
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install packaging tools
+        run: brew install dpkg
+
+      - name: List Xcode schemes
+        run: xcodebuild -list -project Veteris.xcodeproj
+
+      - name: Build Veteris
+        run: |
+          set -euo pipefail
+
+          xcodebuild \
+            -project Veteris.xcodeproj \
+            -scheme Veteris \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
+            ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=YES \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Verify application
+        run: |
+          set -euo pipefail
+
+          APP="build/DerivedData/Build/Products/Release-iphoneos/Veteris.app"
+
+          if [ ! -d "$APP" ]; then
+            echo "::error::Veteris.app was not produced."
+            find build/DerivedData/Build/Products -maxdepth 4 -print
+            exit 1
+          fi
+
+          EXECUTABLE=$(/usr/libexec/PlistBuddy \
+            -c 'Print :CFBundleExecutable' "$APP/Info.plist")
+
+          lipo -info "$APP/$EXECUTABLE"
+
+          if ! lipo -info "$APP/$EXECUTABLE" | grep -q arm64; then
+            echo "::error::Veteris is not built for ARM64."
+            exit 1
+          fi
+
+      - name: Package rootful DEB
+        run: |
+          set -euo pipefail
+
+          APP="build/DerivedData/Build/Products/Release-iphoneos/Veteris.app"
+          PKG="build/package"
+
+          mkdir -p "$PKG/DEBIAN" "$PKG/Applications"
+          cp -R "$APP" "$PKG/Applications/Veteris.app"
+
+          cat > "$PKG/DEBIAN/control" <<'CONTROL'
+          Package: com.victorlobe.veteris
+          Name: Veteris
+          Version: 4.0.1-1
+          Architecture: iphoneos-arm64
+          Description: Veteris application for jailbroken iOS
+          Maintainer: Veteris Fork Maintainers
+          Section: Applications
+          Priority: optional
+          CONTROL
+
+          chmod 0755 "$PKG/DEBIAN"
+          chmod 0644 "$PKG/DEBIAN/control"
+
+          dpkg-deb --build --root-owner-group \
+            "$PKG" \
+            "$GITHUB_WORKSPACE/Veteris-ARM64-rootful.deb"
+
+          dpkg-deb --info "$GITHUB_WORKSPACE/Veteris-ARM64-rootful.deb"
+
+      - name: Upload DEB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Veteris-ARM64-rootful-DEB
+          path: Veteris-ARM64-rootful.deb
+          if-no-files-found: error
+          retention-days: 14
