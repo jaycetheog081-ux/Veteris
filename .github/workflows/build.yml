@@ -33,55 +33,75 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild -list -project Veteris.xcodeproj
-          grep -nE \
-            'IPHONEOS_DEPLOYMENT_TARGET|VALID_ARCHS|ARCHS|MainStoryboard.storyboard|Info.plist' \
-            Veteris.xcodeproj/project.pbxproj || true
+          grep -nE 'IPHONEOS_DEPLOYMENT_TARGET|VALID_ARCHS|ARCHS|MainStoryboard.storyboard|Info.plist|\.gitignore' Veteris.xcodeproj/project.pbxproj || true
 
-      - name: Repair duplicate resource entries
+      - name: Repair resources and architecture settings
         shell: ruby {0}
         run: |
           require 'xcodeproj'
 
-          project_path = 'Veteris.xcodeproj'
-          project = Xcodeproj::Project.open(project_path)
+          project = Xcodeproj::Project.open('Veteris.xcodeproj')
 
+          # Fix project-level and target-level build configurations.
+          configurations = project.build_configurations +
+                           project.targets.flat_map(&:build_configurations)
+
+          configurations.each do |config|
+            settings = config.build_settings
+
+            settings.delete('VALID_ARCHS')
+            settings['ARCHS'] = 'arm64'
+            settings['ONLY_ACTIVE_ARCH'] = 'YES'
+            settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+          end
+
+          # Remove invalid metadata and duplicate resource references.
           project.targets.each do |target|
             target.build_phases.each do |phase|
-              next unless phase.is_a?(Xcodeproj::Project::Object::PBXResourcesBuildPhase)
+              next unless phase.is_a?(
+                Xcodeproj::Project::Object::PBXResourcesBuildPhase
+              )
 
-              seen = {}
+              seen_paths = {}
 
               phase.files.dup.each do |build_file|
                 reference = build_file.file_ref
                 next unless reference
 
-                path = reference.real_path.to_s
-                path = reference.path.to_s if path.empty?
-                basename = File.basename(path)
+                reference_path = reference.path.to_s
+                basename = File.basename(reference_path)
 
-                if basename == 'Info.plist'
+                # Xcode flattens resources into the app bundle. Multiple
+                # .gitignore files therefore collide at the same destination.
+                if basename == '.gitignore' || basename == 'Info.plist'
                   phase.files.delete(build_file)
                   next
                 end
 
-                if seen.key?(path)
+                real_path = reference.real_path.to_s
+                resource_path = real_path.empty? ? reference_path : real_path
+
+                if seen_paths[resource_path]
                   phase.files.delete(build_file)
                 else
-                  seen[path] = true
+                  seen_paths[resource_path] = true
                 end
               end
-            end
-
-            target.build_configurations.each do |config|
-              settings = config.build_settings
-              settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
-              settings['ARCHS'] = 'arm64'
-              settings['ONLY_ACTIVE_ARCH'] = 'YES'
-              settings.delete('VALID_ARCHS')
             end
           end
 
           project.save
+
+      - name: Verify repaired project settings
+        run: |
+          set -euo pipefail
+
+          if grep -n 'VALID_ARCHS' Veteris.xcodeproj/project.pbxproj; then
+            echo "::error::VALID_ARCHS remains in project.pbxproj."
+            exit 1
+          fi
+
+          echo "Legacy architecture setting removed."
 
       - name: Clean build directory
         run: |
@@ -120,8 +140,11 @@ jobs:
             exit 1
           fi
 
-          EXECUTABLE=$(/usr/libexec/PlistBuddy \
-            -c 'Print :CFBundleExecutable' "$APP/Info.plist")
+          EXECUTABLE=$(
+            /usr/libexec/PlistBuddy \
+              -c 'Print :CFBundleExecutable' \
+              "$APP/Info.plist"
+          )
 
           BINARY="$APP/$EXECUTABLE"
 
@@ -138,7 +161,8 @@ jobs:
           fi
 
           /usr/libexec/PlistBuddy \
-            -c 'Print :CFBundleIdentifier' "$APP/Info.plist"
+            -c 'Print :CFBundleIdentifier' \
+            "$APP/Info.plist"
 
       - name: Package rootful DEB
         shell: bash
@@ -169,7 +193,8 @@ jobs:
             "$PKG" \
             "$GITHUB_WORKSPACE/Veteris-ARM64-rootful.deb"
 
-          dpkg-deb --info "$GITHUB_WORKSPACE/Veteris-ARM64-rootful.deb"
+          dpkg-deb --info \
+            "$GITHUB_WORKSPACE/Veteris-ARM64-rootful.deb"
 
       - name: Upload rootful DEB
         uses: actions/upload-artifact@v4
