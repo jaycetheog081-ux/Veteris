@@ -1,4 +1,6 @@
-name: Build Veteris Rootful DEB
+# .github/workflows/build.yml
+
+name: Build Veteris ARM64 Rootful DEB
 
 on:
   workflow_dispatch:
@@ -12,22 +14,83 @@ permissions:
 
 jobs:
   build:
-    name: Build ARM64 Rootful Package
+    name: Build Veteris for ARM64
     runs-on: macos-15
 
     steps:
-      - name: Checkout Veteris
+      - name: Checkout Veteris fork
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install packaging tools
-        run: brew install dpkg
+      - name: Install build tools
+        run: |
+          set -euo pipefail
+          brew install dpkg
+          gem install xcodeproj
 
-      - name: List Xcode schemes
-        run: xcodebuild -list -project Veteris.xcodeproj
+      - name: Inspect Xcode project
+        run: |
+          set -euo pipefail
+          xcodebuild -list -project Veteris.xcodeproj
+          grep -nE \
+            'IPHONEOS_DEPLOYMENT_TARGET|VALID_ARCHS|ARCHS|MainStoryboard.storyboard|Info.plist' \
+            Veteris.xcodeproj/project.pbxproj || true
+
+      - name: Repair duplicate resource entries
+        shell: ruby {0}
+        run: |
+          require 'xcodeproj'
+
+          project_path = 'Veteris.xcodeproj'
+          project = Xcodeproj::Project.open(project_path)
+
+          project.targets.each do |target|
+            target.build_phases.each do |phase|
+              next unless phase.is_a?(Xcodeproj::Project::Object::PBXResourcesBuildPhase)
+
+              seen = {}
+
+              phase.files.dup.each do |build_file|
+                reference = build_file.file_ref
+                next unless reference
+
+                path = reference.real_path.to_s
+                path = reference.path.to_s if path.empty?
+                basename = File.basename(path)
+
+                if basename == 'Info.plist'
+                  phase.files.delete(build_file)
+                  next
+                end
+
+                if seen.key?(path)
+                  phase.files.delete(build_file)
+                else
+                  seen[path] = true
+                end
+              end
+            end
+
+            target.build_configurations.each do |config|
+              settings = config.build_settings
+              settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+              settings['ARCHS'] = 'arm64'
+              settings['ONLY_ACTIVE_ARCH'] = 'YES'
+              settings.delete('VALID_ARCHS')
+            end
+          end
+
+          project.save
+
+      - name: Clean build directory
+        run: |
+          set -euo pipefail
+          rm -rf build
+          mkdir -p build
 
       - name: Build Veteris
+        shell: bash
         run: |
           set -euo pipefail
 
@@ -37,40 +100,54 @@ jobs:
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
-            -derivedDataPath build/DerivedData \
+            -derivedDataPath "$GITHUB_WORKSPACE/build/DerivedData" \
+            -parallelizeTargets NO \
             ARCHS=arm64 \
             ONLY_ACTIVE_ARCH=YES \
+            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
             CODE_SIGNING_ALLOWED=NO \
             build
 
-      - name: Verify application
+      - name: Verify ARM64 application
+        shell: bash
         run: |
           set -euo pipefail
 
           APP="build/DerivedData/Build/Products/Release-iphoneos/Veteris.app"
 
           if [ ! -d "$APP" ]; then
-            echo "::error::Veteris.app was not produced."
-            find build/DerivedData/Build/Products -maxdepth 4 -print
+            echo "::error::Veteris.app was not generated."
+            find build/DerivedData/Build/Products -maxdepth 5 -print || true
             exit 1
           fi
 
           EXECUTABLE=$(/usr/libexec/PlistBuddy \
             -c 'Print :CFBundleExecutable' "$APP/Info.plist")
 
-          lipo -info "$APP/$EXECUTABLE"
+          BINARY="$APP/$EXECUTABLE"
 
-          if ! lipo -info "$APP/$EXECUTABLE" | grep -q arm64; then
-            echo "::error::Veteris is not built for ARM64."
+          if [ ! -f "$BINARY" ]; then
+            echo "::error::App executable is missing: $BINARY"
             exit 1
           fi
 
+          lipo -info "$BINARY"
+
+          if ! lipo -info "$BINARY" | grep -q 'arm64'; then
+            echo "::error::The executable does not contain ARM64."
+            exit 1
+          fi
+
+          /usr/libexec/PlistBuddy \
+            -c 'Print :CFBundleIdentifier' "$APP/Info.plist"
+
       - name: Package rootful DEB
+        shell: bash
         run: |
           set -euo pipefail
 
           APP="build/DerivedData/Build/Products/Release-iphoneos/Veteris.app"
-          PKG="build/package"
+          PKG="$GITHUB_WORKSPACE/build/package"
 
           mkdir -p "$PKG/DEBIAN" "$PKG/Applications"
           cp -R "$APP" "$PKG/Applications/Veteris.app"
@@ -95,7 +172,7 @@ jobs:
 
           dpkg-deb --info "$GITHUB_WORKSPACE/Veteris-ARM64-rootful.deb"
 
-      - name: Upload DEB artifact
+      - name: Upload rootful DEB
         uses: actions/upload-artifact@v4
         with:
           name: Veteris-ARM64-rootful-DEB
