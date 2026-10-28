@@ -101,7 +101,6 @@ jobs:
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
             -derivedDataPath "$GITHUB_WORKSPACE/build/DerivedData" \
-            -parallelizeTargets NO \
             ARCHS=arm64 \
             ONLY_ACTIVE_ARCH=YES \
             IPHONEOS_DEPLOYMENT_TARGET=12.0 \
